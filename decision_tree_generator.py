@@ -1,4 +1,4 @@
-from numpy import *
+import numpy as np
 from enum import Enum
 from collections import Counter
 
@@ -48,13 +48,14 @@ def data_from(nodes, file):
 
 def generate_tree(query, examples, attr_nodes, parent_examples):
     if not examples:
-        return plurality_leaf(query, parent_examples)
-    elif homo(query, examples):
-        return DTNode(examples[0][query])
+        return plurality_leaf(query.value, parent_examples)
+    elif homo(query.value, examples):
+        return DTNode(examples[0][query.value])
     elif not attr_nodes:
-        return plurality_leaf(query, examples)
+        return plurality_leaf(query.value, examples)
     else:
-        attr_index = argmax(list(map(lambda n: importance(n.value, examples), attr_nodes)))
+        attr_index = np.argmax(list(map(lambda n: importance(query, n, examples), attr_nodes)))
+        # print(f"{attr_nodes[attr_index].value}\n")
         node = attr_nodes[attr_index]
         del attr_nodes[attr_index]
         for k in node.branches.keys():
@@ -88,22 +89,36 @@ def plurality_leaf(query, examples):
     return DTNode('P-' + Counter(list(map(lambda ex: ex[query], examples))).most_common(1)[0][0])
 
 
-def importance(attribute, examples):
-    # TODO
-    if attribute == 'Patrons':
-        return 5
-    if attribute == 'Hungry':
-        return 4
-    if attribute == 'Type':
-        return 3
-    if attribute == 'Fri/Sat':
-        return 2
-    return 0
+def importance(query, attribute, examples):
+    attr = attribute.value
+    length = len(examples)
+    entropy = 0
+    for k in query.branches.keys():
+        k_length = sum(1 for example in examples if example[query.value] == k)
+        tmp = k_length / length
+        if tmp != 0:
+            entropy += -tmp * np.log(tmp)
+
+    v_entropies = []
+    for v in attribute.branches.keys():
+        v_length = sum(1 for example in examples if example[attr] == v)
+        if v_length == 0:
+            break
+        v_entropy = 0
+        for k in query.branches.keys():
+            v_k_length = sum(1 for example in examples if example[attr] == v and example[query.value] == k)
+            tmp2 = v_k_length / v_length
+            if tmp2 != 0:
+                v_entropy += -tmp2 * np.log(tmp2)
+        v_entropies.append(v_entropy * v_length / length)
+
+    # print(f"importance of {attr} is {entropy - sum(v_entropies)}")
+    return entropy - sum(v_entropies)
 
 
 desc_nodes = attr_nodes_from('AIMA_Restaurant-desc.txt')
 data = data_from(desc_nodes, 'AIMA_Restaurant-data.txt')
 # print(*desc_nodes, sep='\n')
 # print(*data, sep='\n')
-_query = 'WillWait'
-print(generate_tree(_query, data, [n for n in desc_nodes if n.value != _query], None))
+_query = [n for n in desc_nodes if n.value == 'WillWait'][0]
+print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
