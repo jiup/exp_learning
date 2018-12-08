@@ -116,9 +116,23 @@ def importance(query, attribute, examples):
     return entropy - sum(v_entropies)
 
 
-desc_nodes = attr_nodes_from('AIMA_Restaurant-desc.txt')
-data = data_from(desc_nodes, 'AIMA_Restaurant-data.txt')
-# print(*desc_nodes, sep='\n')
-# print(*data, sep='\n')
-_query = [n for n in desc_nodes if n.value == 'WillWait'][0]
-print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
+def test():
+    desc_nodes = attr_nodes_from('AIMA_Restaurant-desc.txt')
+    data = data_from(desc_nodes, 'AIMA_Restaurant-data.txt')
+    # print(*desc_nodes, sep='\n')
+    # print(*data, sep='\n')
+    _query = [n for n in desc_nodes if n.value == 'WillWait'][0]
+    print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
+
+
+def test2():
+    desc_nodes = attr_nodes_from('iris.desc.discrete.txt')
+    data = data_from(desc_nodes, 'iris.data.discrete.txt')
+    # print(*desc_nodes, sep='\n')
+    # print(*data, sep='\n')
+    _query = [n for n in desc_nodes if n.value == 'Class'][0]
+    print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
+
+
+if __name__ == '__main__':
+    test2()

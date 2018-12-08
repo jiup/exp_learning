@@ -1,0 +1,5 @@
+Sepal length: S/MS/ML/L
+Sepal width: S/MS/ML/L
+Petal length: S/MS/ML/L
+Petal width: S/MS/ML/L
+Class: Iris-setosa/Iris-virginica/Iris-versicolor
