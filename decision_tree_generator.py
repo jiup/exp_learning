@@ -106,8 +106,4 @@ data = data_from(desc_nodes, 'AIMA_Restaurant-data.txt')
 # print(*desc_nodes, sep='\n')
 # print(*data, sep='\n')
 _query = 'WillWait'
-for _node in desc_nodes:
-    if _node.value == _query:
-        desc_nodes.remove(_node)
-        break
-print(generate_tree(_query, data, desc_nodes, None))
+print(generate_tree(_query, data, [n for n in desc_nodes if n.value != _query], None))
