@@ -55,7 +55,6 @@ def generate_tree(query, examples, attr_nodes, parent_examples):
         return plurality_leaf(query.value, examples)
     else:
         attr_index = np.argmax(list(map(lambda n: importance(query, n, examples), attr_nodes)))
-        # print(f"{attr_nodes[attr_index].value}\n")
         node = attr_nodes[attr_index]
         del attr_nodes[attr_index]
         for k in node.branches.keys():
@@ -86,7 +85,7 @@ def homo(query, examples):
 def plurality_leaf(query, examples):
     if examples is None:
         return DTNode('<Unknown>')
-    return DTNode('P-' + Counter(list(map(lambda ex: ex[query], examples))).most_common(1)[0][0])
+    return DTNode(Counter(list(map(lambda ex: ex[query], examples))).most_common(1)[0][0] + '?')
 
 
 def importance(query, attribute, examples):
@@ -137,11 +136,11 @@ def test2():
 def test3():
     desc_nodes = attr_nodes_from('data/weather-desc.txt')
     data = data_from(desc_nodes, 'data/weather-data.txt')
-    print(*desc_nodes, sep='\n')
+    # print(*desc_nodes, sep='\n')
     # print(*data, sep='\n')
     _query = [n for n in desc_nodes if n.value == 'Play?'][0]
     print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
 
 
 if __name__ == '__main__':
-    test2()
+    test()
