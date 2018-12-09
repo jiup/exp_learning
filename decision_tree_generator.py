@@ -103,7 +103,7 @@ def importance(query, attribute, examples):
     for v in attribute.branches.keys():
         v_length = sum(1 for example in examples if example[attr] == v)
         if v_length == 0:
-            break
+            continue
         v_entropy = 0
         for k in query.branches.keys():
             v_k_length = sum(1 for example in examples if example[attr] == v and example[query.value] == k)
@@ -131,6 +131,15 @@ def test2():
     # print(*desc_nodes, sep='\n')
     # print(*data, sep='\n')
     _query = [n for n in desc_nodes if n.value == 'Class'][0]
+    print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
+
+
+def test3():
+    desc_nodes = attr_nodes_from('data/weather-desc.txt')
+    data = data_from(desc_nodes, 'data/weather-data.txt')
+    print(*desc_nodes, sep='\n')
+    # print(*data, sep='\n')
+    _query = [n for n in desc_nodes if n.value == 'Play?'][0]
     print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
 
 
