@@ -28,24 +28,6 @@ class DTNode:
             return "".join(s)
 
 
-def attr_nodes_from(file):
-    nodes = []
-    with open(file, 'r') as f:
-        for line in f:
-            attr, values = line.rstrip('\n').split(r': ')
-            nodes.append(DTNode(attr, dict.fromkeys(values.split("/"))))
-    return nodes
-
-
-def data_from(nodes, file):
-    attrs = list(map((lambda node: node.value), nodes))
-    examples = []
-    with open(file, 'r') as f:
-        for line in f:
-            examples.append(dict(zip(attrs, line.rstrip('\n').split(','))))
-    return examples
-
-
 def generate_tree(query, examples, attr_nodes, parent_examples):
     if not examples:
         return plurality_leaf(query.value, parent_examples)
@@ -115,13 +97,51 @@ def importance(query, attribute, examples):
     return entropy - sum(v_entropies)
 
 
+def attr_nodes_from(file):
+    nodes = []
+    with open(file, 'r') as f:
+        for line in f:
+            attr, values = line.rstrip('\n').split(r': ')
+            nodes.append(DTNode(attr, dict.fromkeys(values.split("/"))))
+    return nodes
+
+
+def data_from(nodes, file):
+    attrs = list(map((lambda node: node.value), nodes))
+    examples = []
+    with open(file, 'r') as f:
+        for line in f:
+            examples.append(dict(zip(attrs, line.rstrip('\n').split(','))))
+    return examples
+
+
+def evaluate(tree, evidence):
+    p = tree
+    while p.type != DTNodeType.LEAF:
+        p = p.branches[evidence[p.value]]
+    return p.value
+
+
 def test():
     desc_nodes = attr_nodes_from('data/AIMA_Restaurant-desc.txt')
     data = data_from(desc_nodes, 'data/AIMA_Restaurant-data.txt')
     # print(*desc_nodes, sep='\n')
     # print(*data, sep='\n')
     _query = [n for n in desc_nodes if n.value == 'WillWait'][0]
-    print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
+    restaurant_decision_tree = generate_tree(_query, data, [n for n in desc_nodes if n != _query], None)
+    print(restaurant_decision_tree)
+    print('Result:', evaluate(restaurant_decision_tree, {
+        'Alternate': 'Yes',
+        'Bar': 'Yes',
+        'Fri/Sat': 'Yes',
+        'Hungry': 'Yes',
+        'Patrons': 'Full',
+        'Price': '$$$',
+        'Raining': 'Yes',
+        'Reservation': 'No',
+        'Type': 'Burger',
+        'WaitEstimate': '>60'
+    }))
 
 
 def test2():
