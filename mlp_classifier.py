@@ -20,6 +20,8 @@ class BPNN:
             random.shuffle(training_pairs)
             for x, y in training_pairs:
                 dbs, dws = self.backprop(x, y)
+                # print('DBS:  ', np.array2string(dbs, threshold=np.inf, max_line_width=np.inf, separator=', ').replace('\n', ''),
+                #       '\nDWS:  ', np.array2string(dws, threshold=np.inf, max_line_width=np.inf, separator=', ').replace('\n', ''), '\n')
                 acc_dbs, acc_dws = [dbs, dws] if acc_dbs is None else [np.add(acc_dbs, dbs), np.add(acc_dws, dws)]
                 self.biases = [b - alpha * db for b, db in zip(self.biases, dbs)]
                 self.weights = [w - alpha * dw for w, dw in zip(self.weights, dws)]
@@ -52,8 +54,8 @@ class BPNN:
         return acts, zs
 
     def backprop(self, x, y):
-        dws = [np.zeros(np.shape(w)) for w in self.weights]
-        dbs = [np.zeros(np.shape(b)) for b in self.biases]
+        dws = np.array([np.zeros(np.shape(w)) for w in self.weights])
+        dbs = np.array([np.zeros(np.shape(b)) for b in self.biases])
         acts, zs = self.feed_forward(x)
         final_activation_d = self.softmax_d if self.softmax_on else self.activation_d
         # ∂C/∂b = ∂C/∂a * ∂a/∂z * ∂z/∂b(=1) = ∂C/∂a * ∂a/∂z <==> error
@@ -71,7 +73,7 @@ class BPNN:
         # print(f"normalized (max={max(ys)}) = \n{y_exp}")
         # print(f"sum = {sum(y_exp)}")
         # print(f"softmax = {y_exp / sum(y_exp)}")
-        return y_exp / sum(y_exp)
+        return y_exp / np.sum(y_exp)
 
     def softmax_d(self, ys):
         # return ys * (1 - ys)
@@ -89,11 +91,12 @@ def delta_sigmoid(x):
     return tmp * (1 - tmp)
 
 
-def relu(x, leaky=0):
+def relu(x, leaky=0.03):
     return np.maximum(0, x) if leaky == 0 else np.maximum(leaky * x, x)
 
 
-def delta_relu(x, leaky=0):
+def delta_relu(x, leaky=0.03):
+    # return np.maximum(0, 1) if leaky == 0 else np.maximum(leaky, 1)
     return np.where(x <= 0, 0, 1) if leaky == 0 else np.where(x <= 0, leaky, 1)
 
 
@@ -108,7 +111,8 @@ def delta_mean_squared_loss(hs, ys):
 
 def cross_entropy_loss(hs, ys, fix=1e-12):
     hs = np.clip(hs, fix, 1 - fix)  # fix to avoid log(0)
-    return -np.sum(ys * np.log(hs)) / len(hs)
+    # return -np.sum(ys * np.log(hs)) / len(hs)
+    return -np.sum(ys * np.log(hs))
 
 
 def delta_cross_entropy_loss(hs, ys, fix=1e-12):
@@ -148,11 +152,11 @@ def test_iris_classifier():
 
     iris_classifier = BPNN(
         [4, 4, 3],
-        [sigmoid, delta_sigmoid],
+        [relu, delta_relu],
         [cross_entropy_loss, delta_cross_entropy_loss])
 
     # print(iris_classifier.softmax(np.vstack([1, 2.5, 3, 0])))
-    iris_classifier.sgd(xs, ys, 1e-13, 500000)
+    iris_classifier.sgd(xs, ys, 1e-6, 500000)
 
 
 if __name__ == '__main__':
