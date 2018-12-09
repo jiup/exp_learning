@@ -117,8 +117,8 @@ def importance(query, attribute, examples):
 
 
 def test():
-    desc_nodes = attr_nodes_from('AIMA_Restaurant-desc.txt')
-    data = data_from(desc_nodes, 'AIMA_Restaurant-data.txt')
+    desc_nodes = attr_nodes_from('data/AIMA_Restaurant-desc.txt')
+    data = data_from(desc_nodes, 'data/AIMA_Restaurant-data.txt')
     # print(*desc_nodes, sep='\n')
     # print(*data, sep='\n')
     _query = [n for n in desc_nodes if n.value == 'WillWait'][0]
@@ -126,8 +126,8 @@ def test():
 
 
 def test2():
-    desc_nodes = attr_nodes_from('iris.desc.discrete.txt')
-    data = data_from(desc_nodes, 'iris.data.discrete.txt')
+    desc_nodes = attr_nodes_from('data/iris.desc.discrete.txt')
+    data = data_from(desc_nodes, 'data/iris.data.discrete.txt')
     # print(*desc_nodes, sep='\n')
     # print(*data, sep='\n')
     _query = [n for n in desc_nodes if n.value == 'Class'][0]
