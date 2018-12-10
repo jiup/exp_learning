@@ -1,18 +1,18 @@
 import torch
 import numpy as np
 
-torch.manual_seed(1)
-
 
 class NNClassifier(torch.nn.Module):
-    def __init__(self, n_input, n_hidden, n_output):
+    def __init__(self, sizes):
         super(NNClassifier, self).__init__()
-        self.hidden_layer = torch.nn.Linear(n_input, n_hidden)
-        self.output_layer = torch.nn.Linear(n_hidden, n_output)
+        self.layers = torch.nn.ModuleList()
+        for i in range(len(sizes) - 1):
+            self.layers.append(torch.nn.Linear(sizes[i], sizes[i + 1]))
 
     def forward(self, a):
-        a = torch.nn.functional.relu(self.hidden_layer(a))
-        return torch.nn.functional.softmax(self.output_layer(a), dim=1)
+        for layer in self.layers[:-1]:
+            a = torch.nn.functional.relu(layer(a))
+        return torch.nn.functional.softmax(self.layers[-1](a), dim=1)
 
 
 def load_data(path):
@@ -36,24 +36,34 @@ def flatten(y, n):
     return new_y
 
 
-def test():
-    X, y = load_data('data/iris.data.txt')
-    y = flatten(y, 3)
-    X = torch.from_numpy(np.array(X).astype(np.float)).float()
-    y = torch.from_numpy(np.array(y).astype(np.float)).float()
-    # print(X, '\n', y)
-
-    classifier = NNClassifier(4, 8, 3)
-    optimizer = torch.optim.RMSprop(classifier.parameters(), lr=0.0015)
-    loss_func = torch.nn.MSELoss()  # this is for regression mean squared loss
-    for it in range(100):
-        prediction = classifier.forward(X)  # input x and predict based on x
-        loss = loss_func(prediction, y)  # must be (1. nn output, 2. target)
+def training(classifier, X, y, alpha, iter_count):
+    optimizer = torch.optim.RMSprop(classifier.parameters(), alpha)
+    loss_func = torch.nn.MSELoss()
+    for epoch in range(iter_count):
+        prediction = classifier.forward(X)
+        loss = loss_func(prediction, y)
+        optimizer.zero_grad()   # clear gradients for next train
+        loss.backward()         # backpropagation, compute gradients
+        optimizer.step()        # apply gradients
+        # print(f"Expected: {list(clazz.T.astype(np.int)[0])}")
+        # print(f"Actual:   {[np.argmax(result) for result in prediction.data.numpy().squeeze()]}")
         print(loss)
-        optimizer.zero_grad()  # clear gradients for next train
-        loss.backward()  # backpropagation, compute gradients
-        optimizer.step()  # apply gradients
+    return classifier
+
+
+def evaluate(nn, x):
+    x = torch.from_numpy(np.array(x).astype(np.float)).float()
+    prediction = nn.forward(x)
+    return np.argmax(prediction.data.numpy())
 
 
 if __name__ == '__main__':
-    test()
+    torch.manual_seed(1)  # reproducible switch
+    X, result = load_data('data/iris.data.txt')
+    y = flatten(result, 3)
+    X = torch.from_numpy(np.array(X).astype(np.float)).float()
+    y = torch.from_numpy(np.array(y).astype(np.float)).float()
+    # print(X, '\n', y)
+    model = NNClassifier([4, 8, 8, 3])
+    model = training(model, X, y, 0.01, 100)
+    print(f"Result: class_{evaluate(model, [[5.1000, 3.5000, 1.4000, 0.2000]])}")
