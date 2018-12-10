@@ -1,0 +1,5 @@
+Outlook: sunny/overcast/rain
+Temperature: hot/mild/cool
+Humidity: high/normal/high
+Windy: false/true
+Play?: no/yes

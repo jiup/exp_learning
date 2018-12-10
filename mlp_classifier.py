@@ -1,21 +1,41 @@
 import numpy as np
+import random
 
 
 class BPNN:
     def __init__(self, sizes, act_func, cost_func, softmax=True):
         self.l_size = len(sizes)
         self.sizes = sizes
-        self.biases = [np.random.randn(i, 1) for i in sizes[1:]]
-        self.weights = [np.random.randn(k, j) for j, k in zip(sizes[:-1], sizes[1:])]
+        self.biases = np.array([np.random.randn(i, 1) for i in sizes[1:]])
+        self.weights = np.array([np.random.randn(k, j) for j, k in zip(sizes[:-1], sizes[1:])])
         self.activation, self.activation_d = act_func
         self.cost, self.cost_d = cost_func
         self.softmax_on = softmax
 
-    def sgd(self, xs, ys, alpha):
-        for x, y in zip(xs, ys):
-            dbs, dws = self.backprop(x, y)
-            self.biases = [b - alpha * db for b, db in zip(self.biases, dbs)]
-            self.weights = [w - alpha * dw for w, dw in zip(self.weights, dws)]
+    def sgd(self, xs, ys, alpha, max_iter):
+        iter_count = 0
+        while iter_count < max_iter:
+            acc_dbs = acc_dws = None
+            training_pairs = list(zip(xs, ys))
+            random.shuffle(training_pairs)
+            for x, y in training_pairs:
+                dbs, dws = self.backprop(x, y)
+                # print('DBS:  ', np.array2string(dbs, threshold=np.inf, max_line_width=np.inf, separator=', ').replace('\n', ''),
+                #       '\nDWS:  ', np.array2string(dws, threshold=np.inf, max_line_width=np.inf, separator=', ').replace('\n', ''), '\n')
+                acc_dbs, acc_dws = [dbs, dws] if acc_dbs is None else [np.add(acc_dbs, dbs), np.add(acc_dws, dws)]
+                self.biases = [b - alpha * db for b, db in zip(self.biases, dbs)]
+                self.weights = [w - alpha * dw for w, dw in zip(self.weights, dws)]
+                iter_count = iter_count + 1
+            # self.biases = np.subtract(self.biases, alpha * acc_dbs)
+            # self.weights = np.subtract(self.weights, alpha * acc_dws)
+            # # self.biases = [b - alpha * acc_dbs for b, db in zip(self.biases, acc_dbs)]
+            # # self.weights = [w - alpha * acc_dws for w, dw in zip(self.weights, acc_dws)]
+            # iter_count = iter_count + 1
+            # show loss improvement
+            h = self.evaluate(np.vstack([5.9, 3.0, 5.1, 1.8]))
+            if iter_count % 1000 == 0:
+                print(f"iter_count = {iter_count}")
+                print(h, self.cost(h, [0, 0, 1]))
         pass
 
     def evaluate(self, a):
@@ -34,12 +54,11 @@ class BPNN:
         return acts, zs
 
     def backprop(self, x, y):
-        dws = [np.zeros(np.shape(w)) for w in self.weights]
-        dbs = [np.zeros(np.shape(b)) for b in self.biases]
+        dws = np.array([np.zeros(np.shape(w)) for w in self.weights])
+        dbs = np.array([np.zeros(np.shape(b)) for b in self.biases])
         acts, zs = self.feed_forward(x)
         final_activation_d = self.softmax_d if self.softmax_on else self.activation_d
         # ∂C/∂b = ∂C/∂a * ∂a/∂z * ∂z/∂b(=1) = ∂C/∂a * ∂a/∂z <==> error
-        print(acts[-1], y)
         dbs[-1] = self.cost_d(acts[-1], y) * final_activation_d(zs[-1])
         # ∂C/∂w = ∂C/∂a * ∂a/∂z * ∂z/∂w(=prev_a) = ∂C/∂b * prev_a
         dws[-1] = np.dot(dbs[-1], acts[-2].transpose())
@@ -49,28 +68,36 @@ class BPNN:
         return dbs, dws
 
     def softmax(self, ys):
+        # print(f"\nhs = \n{ys}")
         y_exp = np.exp(ys - np.max(ys))
-        return y_exp / sum(y_exp)
+        # print(f"normalized (max={max(ys)}) = \n{y_exp}")
+        # print(f"sum = {sum(y_exp)}")
+        # print(f"softmax = {y_exp / sum(y_exp)}")
+        return y_exp / np.sum(y_exp)
 
     def softmax_d(self, ys):
-        return ys * (1 - ys)
+        # return ys * (1 - ys)
+        return np.vstack(np.sum(np.diagflat(ys) - np.dot(ys, ys.T), axis=1))
 
 
 # Activation functions
 def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+    # return 1 / (1 + np.exp(-x))
+    return np.array([1 / (1 + np.exp(-i)) if i >= 0 else np.exp(i) / (1 + np.exp(i)) for i in x])
 
 
 def delta_sigmoid(x):
-    return x * (1 - x)
+    tmp = sigmoid(x)
+    return tmp * (1 - tmp)
 
 
-def relu(x, leaky=0):
-    return np.maximum(leaky * x, x)
+def relu(x, leaky=0.03):
+    return np.maximum(0, x) if leaky == 0 else np.maximum(leaky * x, x)
 
 
-def delta_relu(x, leaky=0):
-    return np.where(x <= 0, leaky, 1)
+def delta_relu(x, leaky=0.03):
+    # return np.maximum(0, 1) if leaky == 0 else np.maximum(leaky, 1)
+    return np.where(x <= 0, 0, 1) if leaky == 0 else np.where(x <= 0, leaky, 1)
 
 
 # Loss functions
@@ -84,7 +111,8 @@ def delta_mean_squared_loss(hs, ys):
 
 def cross_entropy_loss(hs, ys, fix=1e-12):
     hs = np.clip(hs, fix, 1 - fix)  # fix to avoid log(0)
-    return -np.sum(ys * np.log(hs)) / len(hs)
+    # return -np.sum(ys * np.log(hs)) / len(hs)
+    return -np.sum(ys * np.log(hs))
 
 
 def delta_cross_entropy_loss(hs, ys, fix=1e-12):
@@ -106,9 +134,31 @@ def test():
     classifier.sgd(
         [[[0], [1]], [[1], [0]]],
         [[[1], [0], [0], [0]], [[0], [1], [0], [0]]],
-        0.0003
-    )
+        0.0003, 100)
+
+
+def test_iris_classifier():
+    # fill in the iris dataset
+    xs, ys, y_dict = [], [], {}
+    with open('data/iris.data.txt', 'r') as f:
+        for line in f:
+            cells = line.rstrip('\n').split(',')
+            out = cells[-1]
+            if out not in y_dict:
+                y_dict[out] = len(y_dict)
+            xs.append(np.vstack([float(i) for i in cells[:-1]]))
+            ys.append(y_dict[out])
+    print(y_dict)
+
+    iris_classifier = BPNN(
+        [4, 4, 3],
+        [relu, delta_relu],
+        [cross_entropy_loss, delta_cross_entropy_loss])
+
+    # print(iris_classifier.softmax(np.vstack([1, 2.5, 3, 0])))
+    iris_classifier.sgd(xs, ys, 1e-6, 500000)
 
 
 if __name__ == '__main__':
-    test()
+    np.seterr(all='warn', over='raise')
+    test_iris_classifier()
