@@ -32,7 +32,7 @@ for num_train in range(1, 150, 1):
 
     correct_rate.append(total_correct_rate/100)
     num_train_list.append(num_train/150)
-    shuffle(data)
+    # shuffle(data)
 
 def my_plotter(ax, data1, data2, param_dict):
     out = ax.plot(data1, data2, **param_dict)
