@@ -47,7 +47,7 @@ def training(classifier, X, y, alpha, iter_count):
         optimizer.step()        # apply gradients
         # print(f"Expected: {list(clazz.T.astype(np.int)[0])}")
         # print(f"Actual:   {[np.argmax(result) for result in prediction.data.numpy().squeeze()]}")
-        print(loss)
+        # print(loss)
     return classifier
 
 
@@ -55,15 +55,18 @@ def evaluate(nn, x):
     x = torch.from_numpy(np.array(x).astype(np.float)).float()
     prediction = nn.forward(x)
     return np.argmax(prediction.data.numpy())
+    # return prediction.data.numpy()
 
 
 if __name__ == '__main__':
     torch.manual_seed(1)  # reproducible switch
     X, result = load_data('data/iris.data.txt')
+    # print(result)
     y = flatten(result, 3)
+    # print(y)
     X = torch.from_numpy(np.array(X).astype(np.float)).float()
     y = torch.from_numpy(np.array(y).astype(np.float)).float()
-    # print(X, '\n', y)
     model = NNClassifier([4, 8, 8, 3])
-    model = training(model, X, y, 0.01, 100)
+    model = training(model, X, y, 0.007, 400)
     print(f"Result: class_{evaluate(model, [[5.1000, 3.5000, 1.4000, 0.2000]])}")
+    print(flatten([[0]], 3))
