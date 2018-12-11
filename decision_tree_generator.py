@@ -162,5 +162,25 @@ def test3():
     print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
 
 
+def test4():
+    desc_nodes = attr_nodes_from('data/tic-tac-toe.desc.txt')
+    data = data_from(desc_nodes, 'data/tic-tac-toe.data.txt')
+    # print(*desc_nodes, sep='\n')
+    # print(*data, sep='\n')
+    _query = [n for n in desc_nodes if n.value == 'Result'][0]
+    tic_tac_toe_decision_tree = generate_tree(_query, data, [n for n in desc_nodes if n != _query], None)
+    print(tic_tac_toe_decision_tree)
+    print('Result:', evaluate(tic_tac_toe_decision_tree, {
+        'p_1_1': '1', 'p_1_2': '2', 'p_1_3': '2',
+        'p_2_1': '0', 'p_2_2': '1', 'p_2_3': '0',
+        'p_3_1': '0', 'p_3_2': '0', 'p_3_3': '1'
+    }))
+    print('Result:', evaluate(tic_tac_toe_decision_tree, {
+        'p_1_1': '0', 'p_1_2': '0', 'p_1_3': '1',
+        'p_2_1': '0', 'p_2_2': '1', 'p_2_3': '1',
+        'p_3_1': '2', 'p_3_2': '2', 'p_3_3': '2'
+    }))
+
+
 if __name__ == '__main__':
-    test()
+    test4()
