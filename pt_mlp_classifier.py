@@ -36,19 +36,21 @@ def flatten(y, n):
     return new_y
 
 
-def training(classifier, X, y, alpha, iter_count):
-    optimizer = torch.optim.RMSprop(classifier.parameters(), alpha)
+def training(classifier, X, y, alpha, iter_count, record_loss=False):
+    optimizer = torch.optim.SGD(classifier.parameters(), alpha)
     loss_func = torch.nn.MSELoss()
+    loss_history = []
     for epoch in range(iter_count):
         prediction = classifier.forward(X)
         loss = loss_func(prediction, y)
+        if record_loss:
+            loss_history.append(float(loss.data))
         optimizer.zero_grad()   # clear gradients for next train
         loss.backward()         # backpropagation, compute gradients
         optimizer.step()        # apply gradients
         # print(f"Expected: {list(clazz.T.astype(np.int)[0])}")
         # print(f"Actual:   {[np.argmax(result) for result in prediction.data.numpy().squeeze()]}")
-        # print(loss)
-    return classifier
+    return (classifier, loss_history) if record_loss else classifier
 
 
 def evaluate(nn, x):
@@ -69,4 +71,3 @@ if __name__ == '__main__':
     model = NNClassifier([4, 8, 8, 3])
     model = training(model, X, y, 0.007, 400)
     print(f"Result: class_{evaluate(model, [[5.1000, 3.5000, 1.4000, 0.2000]])}")
-    print(flatten([[0]], 3))
