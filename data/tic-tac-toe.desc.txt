@@ -7,4 +7,4 @@ p_2_3: 0/1/2
 p_3_1: 0/1/2
 p_3_2: 0/1/2
 p_3_3: 0/1/2
-Result: X_Wins/O_Wins
+Result: X_Wins/X_Not_Win
