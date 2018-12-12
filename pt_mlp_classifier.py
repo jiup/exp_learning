@@ -64,7 +64,7 @@ def evaluate(nn, x):
 
 if __name__ == '__main__':
     torch.manual_seed(1)  # reproducible switch
-    if sys.argv[1] == './data/tic-tac-toe.data.txt':
+    if sys.argv[1] == 'data/tic-tac-toe.data.txt':
         if sys.argv[2] == "2":
             model = torch.load('model.pkl')
             print("example:[1, 2, 2, 0, 1, 0, 0, 0, 1])")
@@ -81,7 +81,7 @@ if __name__ == '__main__':
         model = training(model, X, y, 0.007, 500)
         torch.save(model, 'model.pkl')
 
-    elif sys.argv[1] == './data/iris.data.txt':
+    elif sys.argv[1] == 'data/iris.data.txt':
         if sys.argv[2] == "2":
             model = torch.load('model.pkl')
             print("example:[5.1,3.8,1.4,0.2])")
