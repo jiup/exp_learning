@@ -1,7 +1,7 @@
 import numpy as np
 from enum import Enum
 from collections import Counter
-
+import sys
 
 class DTNodeType(Enum):
     INTERNAL = 0
@@ -122,7 +122,7 @@ def evaluate(tree, evidence):
     return p.value
 
 
-def test():
+def test(mode):
     desc_nodes = attr_nodes_from('data/AIMA_Restaurant-desc.txt')
     data = data_from(desc_nodes, 'data/AIMA_Restaurant-data.txt')
     # print(*desc_nodes, sep='\n')
@@ -130,27 +130,38 @@ def test():
     _query = [n for n in desc_nodes if n.value == 'WillWait'][0]
     restaurant_decision_tree = generate_tree(_query, data, [n for n in desc_nodes if n != _query], None)
     print(restaurant_decision_tree)
-    print('Result:', evaluate(restaurant_decision_tree, {
-        'Alternate': 'Yes',
-        'Bar': 'Yes',
-        'Fri/Sat': 'Yes',
-        'Hungry': 'Yes',
-        'Patrons': 'Full',
-        'Price': '$$$',
-        'Raining': 'Yes',
-        'Reservation': 'No',
-        'Type': 'Burger',
-        'WaitEstimate': '>60'
-    }))
+    if mode == "2":
+        print('Result:', evaluate(restaurant_decision_tree, {
+            'Alternate': 'Yes',
+            'Bar': 'Yes',
+            'Fri/Sat': 'Yes',
+            'Hungry': 'Yes',
+            'Patrons': 'Full',
+            'Price': '$$$',
+            'Raining': 'Yes',
+            'Reservation': 'No',
+            'Type': 'Burger',
+            'WaitEstimate': '>60'
+        }))
 
 
-def test2():
+def test2(mode):
     desc_nodes = attr_nodes_from('data/iris.desc.discrete.txt')
     data = data_from(desc_nodes, 'data/iris.data.discrete.txt')
     # print(*desc_nodes, sep='\n')
     # print(*data, sep='\n')
     _query = [n for n in desc_nodes if n.value == 'Class'][0]
-    print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
+    iris = generate_tree(_query, data, [n for n in desc_nodes if n != _query], None)
+    print(iris)
+    if mode == "2":
+        print('Result:', evaluate(iris, {
+            'Petal width': 'S', 'Petal length': 'MS', 'Sepal length': 'S',
+            'Sepal width': 'L'
+        }))
+        print('Result:', evaluate(iris, {
+            'Petal width': 'MS', 'Petal length': 'S', 'Sepal length': 'L',
+            'Sepal width': 'S'
+        }))
 
 
 def test3():
@@ -162,7 +173,7 @@ def test3():
     print(generate_tree(_query, data, [n for n in desc_nodes if n != _query], None))
 
 
-def test4():
+def test4(mode):
     desc_nodes = attr_nodes_from('data/tic-tac-toe.desc.txt')
     data = data_from(desc_nodes, 'data/tic-tac-toe.data.txt')
     # print(*desc_nodes, sep='\n')
@@ -170,17 +181,24 @@ def test4():
     _query = [n for n in desc_nodes if n.value == 'Result'][0]
     tic_tac_toe_decision_tree = generate_tree(_query, data, [n for n in desc_nodes if n != _query], None)
     print(tic_tac_toe_decision_tree)
-    print('Result:', evaluate(tic_tac_toe_decision_tree, {
-        'p_1_1': '1', 'p_1_2': '2', 'p_1_3': '2',
-        'p_2_1': '0', 'p_2_2': '1', 'p_2_3': '0',
-        'p_3_1': '0', 'p_3_2': '0', 'p_3_3': '1'
-    }))
-    print('Result:', evaluate(tic_tac_toe_decision_tree, {
-        'p_1_1': '0', 'p_1_2': '0', 'p_1_3': '1',
-        'p_2_1': '0', 'p_2_2': '1', 'p_2_3': '1',
-        'p_3_1': '2', 'p_3_2': '2', 'p_3_3': '2'
-    }))
+    if mode == "2":
+        print('Result:', evaluate(tic_tac_toe_decision_tree, {
+            'p_1_1': '1', 'p_1_2': '2', 'p_1_3': '2',
+            'p_2_1': '0', 'p_2_2': '1', 'p_2_3': '0',
+            'p_3_1': '0', 'p_3_2': '0', 'p_3_3': '1'
+        }))
+        print('Result:', evaluate(tic_tac_toe_decision_tree, {
+            'p_1_1': '0', 'p_1_2': '0', 'p_1_3': '1',
+            'p_2_1': '0', 'p_2_2': '1', 'p_2_3': '1',
+            'p_3_1': '2', 'p_3_2': '2', 'p_3_3': '2'
+        }))
 
 
 if __name__ == '__main__':
-    test4()
+    if sys.argv[1] == 'data/AIMA_Restaurant-desc.txt':
+        test(sys.argv[2])
+    elif sys.argv[1] == 'data/tic-tac-toe.data.txt':
+        test4(sys.argv[2])
+    elif sys.argv[1] == 'data/iris.data.discrete.txt':
+        test2(sys.argv[2])
+
