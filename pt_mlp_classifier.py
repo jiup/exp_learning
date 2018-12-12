@@ -37,7 +37,7 @@ def flatten(y, n):
 
 
 def training(classifier, X, y, alpha, iter_count, record_loss=False):
-    optimizer = torch.optim.SGD(classifier.parameters(), alpha)
+    optimizer = torch.optim.RMSprop(classifier.parameters(), alpha)
     loss_func = torch.nn.MSELoss()
     loss_history = []
     for epoch in range(iter_count):
@@ -57,17 +57,16 @@ def evaluate(nn, x):
     x = torch.from_numpy(np.array(x).astype(np.float)).float()
     prediction = nn.forward(x)
     return np.argmax(prediction.data.numpy())
-    # return prediction.data.numpy()
 
 
 if __name__ == '__main__':
     torch.manual_seed(1)  # reproducible switch
-    X, result = load_data('data/iris.data.txt')
-    # print(result)
-    y = flatten(result, 3)
-    # print(y)
+    X, result = load_data('data/tic-tac-toe.data.txt')
+    y = flatten(result, 2)
     X = torch.from_numpy(np.array(X).astype(np.float)).float()
     y = torch.from_numpy(np.array(y).astype(np.float)).float()
-    model = NNClassifier([4, 8, 8, 3])
-    model = training(model, X, y, 0.007, 400)
-    print(f"Result: class_{evaluate(model, [[5.1000, 3.5000, 1.4000, 0.2000]])}")
+    # print(X, '\n', y)
+    model = NNClassifier([9, 81, 9, 2])
+    model = training(model, X, y, 0.001, 958)
+    print(f"Result: class_{evaluate(model, [[1, 2, 2, 0, 1, 0, 0, 0, 1]])}")
+    print(f"Result: class_{evaluate(model, [[0, 0, 1, 0, 1, 1, 2, 2, 2]])}")
