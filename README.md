@@ -1,7 +1,8 @@
-# cooperators:
+# Cooperators:
 Yu Zhang, Jiupeng Zhang, Lu Zhang
-# how to run our code:
-## decision tree
+
+# How to run:
+## Decision tree
 there are two modes: 1 is the training mode, 2 is the testing mode.
 you can just copy the command to terminal to test our code
 ```bash
@@ -12,7 +13,7 @@ you can just copy the command to terminal to test our code
     $ python3 decision_tree_generator.py data/iris.data.discrete.txt 1
     $ python3 decision_tree_generator.py data/iris.data.discrete.txt 2
 ```
-##neural network
+## Neural network
 there are also two modes: 1 is the training mode, 2 is the testing mode.
 you can just copy the command to terminal to test our code
 ```bash
