@@ -66,7 +66,7 @@ if __name__ == '__main__':
     torch.manual_seed(1)  # reproducible switch
     if sys.argv[1] == 'data/tic-tac-toe.data.txt':
         if sys.argv[2] == "2":
-            model = torch.load('model.pkl')
+            model = torch.load('ttt_model.pkl')
             print("example:[1, 2, 2, 0, 1, 0, 0, 0, 1])")
             print(f"Result: class_{evaluate(model, [[1, 2, 2, 0, 1, 0, 0, 0, 1]])}")
             print("example:[0, 0, 1, 0, 1, 1, 2, 2, 2])")
@@ -79,11 +79,11 @@ if __name__ == '__main__':
         # # print(X, '\n', y)
         model = NNClassifier([9, 81, 9, 2])
         model = training(model, X, y, 0.007, 500)
-        torch.save(model, 'model.pkl')
+        torch.save(model, 'ttt_model.pkl')
 
     elif sys.argv[1] == 'data/iris.data.txt':
         if sys.argv[2] == "2":
-            model = torch.load('model.pkl')
+            model = torch.load('iris_model.pkl')
             print("example:[5.1,3.8,1.4,0.2])")
             print(f"Result: class_{evaluate(model, [[5.1,3.8,1.4,0.2]])}")
             print("example:[6.0,3.0,4.6,1.8])")
@@ -97,5 +97,5 @@ if __name__ == '__main__':
         # # print(X, '\n', y)
         model = NNClassifier([4, 8, 3])
         model = training(model, X, y, 0.01, 500)
-        torch.save(model, 'model.pkl')
+        torch.save(model, 'iris_model.pkl')
 
